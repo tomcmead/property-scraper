@@ -49,7 +49,7 @@ This project scrapes both Rightmove and Zoopla for property with the specific cr
 ### Built With
 
 * [Beautiful Soup](https://beautiful-soup-4.readthedocs.io/en/latest/)
-
+* [Flask](https://flask.palletsprojects.com/en/2.2.x/)
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
