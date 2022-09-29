@@ -5,7 +5,16 @@ import resources.rightmove
 app = flask.Flask(__name__)
 api = flask_restful.Api(app)
 
-api.add_resource(resources.rightmove.Location, '/location')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False    # reduce amount of warnings
+
+@app.before_first_request
+def create_tables():
+    from database.db import db
+    db.init_app(app)
+    db.create_all()
+
+api.add_resource(resources.rightmove.Rightmove, '/location')
 api.add_resource(resources.rightmove.RightmoveScraper, '/rightmove')
 
 if __name__ == '__main__':

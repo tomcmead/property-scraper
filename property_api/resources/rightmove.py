@@ -1,31 +1,47 @@
 import flask
-import flask_restful
+from flask_restful import Resource, reqparse
 from bs4 import BeautifulSoup
 import requests
+from models.rightmove import RightmoveModel
 
 location_code = {'location': 'empty'}
 
 # RightMoveCriteria - property criteria one request
-class Location(flask_restful.Resource):
-     
+class Rightmove(Resource):
+    
+    def get_arguments(self):
+        """ parse request arguments """
+        parser = reqparse.RequestParser()  # only allow location changes, no name changes allowed
+        parser.add_argument('name', type=str, required=True,
+                            help='This field cannot be left blank')
+        parser.add_argument('location', type=str,
+                            help='This field cannot be left blank')
+        return parser.parse_args()
+
     def get(self):
         """ returns rightmove location code """
-        global location_code
-        return location_code
-    
+        args = self.get_arguments()
+        rm_model = RightmoveModel.find_by_name(args['name'])
+        if rm_model:
+            return rm_model.json()
+        return {'error message': 'Item not found'}, 404
+        
     def post(self):
         """ receive rightmove location code """
-        global location_code
-        location = flask.request.get_json()
-        
-        if len(location['location'])==7 and location['location'].isalnum():
-            location_code = location
-            return {'location': location_code}, 201
+        args = self.get_arguments()
 
-        return {'ERROR Request Format': 'location: <alphanum code length 7>'}, 400
+        if RightmoveModel.find_by_name(args['name']):
+            return {'error message': f"An item with name '{args['name']}' already exists."}, 400
+        rm_model = RightmoveModel(args['name'], args['location'])
+
+        try:
+            rm_model.save_to_db()
+        except:
+            return {"error message": "An error occurred inserting the entry."}, 500
+        return rm_model.json(), 201
 
 
-class RightmoveScraper(flask_restful.Resource):
+class RightmoveScraper(Resource):
 
     def get(self):
         """ find available properties based on rightmove url attributes, return dict containing available properties and details """
@@ -41,7 +57,7 @@ class RightmoveScraper(flask_restful.Resource):
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
             }
 
-            # email address
+            # web address
             rightmove = f"https://www.rightmove.co.uk/property-to-rent/find.html?searchType=RENT&locationIdentifier=REGION%{location_code['location']}&insId={pages}&radius=0.25&minPrice=700&maxPrice=1200&minBedrooms=1&maxBedrooms=2&displayPropertyType=&maxDaysSinceAdded=&sortByPriceDescending=&_includeLetAgreed=on&primaryDisplayPropertyType=&secondaryDisplayPropertyType=&oldDisplayPropertyType=&oldPrimaryDisplayPropertyType=&letType=&letFurnishType=&houseFlatShare="
 
             try:
