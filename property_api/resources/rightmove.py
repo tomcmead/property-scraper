@@ -21,24 +21,48 @@ class Rightmove(Resource):
     def get(self):
         """ returns rightmove location code """
         args = self.get_arguments()
-        rm_model = RightmoveModel.find_by_name(args['name'])
-        if rm_model:
-            return rm_model.json()
-        return {'error message': 'Item not found'}, 404
+        rm_item = RightmoveModel.find_by_name(args['name'])
+        if rm_item:
+            return rm_item.json()
+        return {"error message": f"item '{args['name']}' not found"}, 404
         
     def post(self):
-        """ receive rightmove location code """
+        """ create rightmove db entry """
         args = self.get_arguments()
 
         if RightmoveModel.find_by_name(args['name']):
-            return {'error message': f"An item with name '{args['name']}' already exists."}, 400
-        rm_model = RightmoveModel(args['name'], args['location'])
+            return {"error message": f"an item with name '{args['name']}' already exists."}, 400
+        rm_item = RightmoveModel(args['name'], args['location'])
 
         try:
-            rm_model.save_to_db()
+            rm_item.save_to_db()
         except:
-            return {"error message": "An error occurred inserting the entry."}, 500
-        return rm_model.json(), 201
+            return {"error message": f"error occurred inserting the entry '{args['name']}'."}, 500
+        return rm_item.json(), 201
+
+    def delete(self):
+        """ delete rightmove db entry """
+        args = self.get_arguments()
+
+        rm_item = RightmoveModel.find_by_name(args['name'])
+        if rm_item:
+            rm_item.delete_from_db()
+
+            return {"message": f"item '{args['name']}' has been deleted"}
+
+    def put(self):
+        """ create or update rightmove db entry """
+        args = self.get_arguments()
+        rm_item = RightmoveModel.find_by_name(args['name'])
+
+        if rm_item is None:
+            rm_item = RightmoveModel(args['name'], args['location'])
+        else:
+            rm_item.location = args['location']
+
+        rm_item.save_to_db()
+
+        return rm_item.json()
 
 
 class RightmoveScraper(Resource):
