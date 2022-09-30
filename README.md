@@ -31,16 +31,17 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This project scrapes both Rightmove and Zoopla for property with the specific criteria the user has selected. Once a new property that matches the criteria a notification is sent to the user. The back-end is built using Python, which then integrates with a front-end cross platform Flutter application.
+This project scrapes Rightmove for property with the specific criteria the user has selected. Once a new property that matches the criteria a notification is sent to the user. The back-end is built using Python, which then integrates with a front-end cross platform Flutter application.
 
 ### Current Implementation
-  * N/A
+  * Python REST API Rightmove Scraper 
+    * Add/remove/update users and their rightmove location code
+    * Return links for properties available in their location code 
+    * Data stored in SQLite db
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Todo
-  * Develop Rightmove/Zoopla scraper for specific criteria
-  * Develop REST API to transfer scraper data
   * Develop Flutter cross platform application
   * Integrate application back-end and front-end
 
@@ -50,6 +51,7 @@ This project scrapes both Rightmove and Zoopla for property with the specific cr
 
 * [Beautiful Soup](https://beautiful-soup-4.readthedocs.io/en/latest/)
 * [Flask](https://flask.palletsprojects.com/en/2.2.x/)
+* [SQLite](https://www.sqlite.org/index.html)
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
