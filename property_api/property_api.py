@@ -14,8 +14,7 @@ def create_tables():
     db.init_app(app)
     db.create_all()
 
-api.add_resource(resources.rightmove.Rightmove, '/location')
-api.add_resource(resources.rightmove.RightmoveScraper, '/rightmove')
+api.add_resource(resources.rightmove.Rightmove, '/rightmove')
 
 if __name__ == '__main__':
     app.run(debug=True)

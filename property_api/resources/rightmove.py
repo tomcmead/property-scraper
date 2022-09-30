@@ -6,29 +6,40 @@ from models.rightmove import RightmoveModel
 
 location_code = {'location': 'empty'}
 
-# RightMoveCriteria - property criteria one request
+# RightMoveCriteria - user property criteria
 class Rightmove(Resource):
     
-    def get_arguments(self):
+    def get_arguments(self, locationRequired=False):
         """ parse request arguments """
         parser = reqparse.RequestParser()  # only allow location changes, no name changes allowed
         parser.add_argument('name', type=str, required=True,
                             help='This field cannot be left blank')
-        parser.add_argument('location', type=str,
-                            help='This field cannot be left blank')
+        if locationRequired:
+            parser.add_argument('location', type=str, required=True,
+                                help='This field cannot be left blank')
+        else:
+            parser.add_argument('location', type=str,
+                                help='This field cannot be left blank')
         return parser.parse_args()
+
 
     def get(self):
         """ returns rightmove location code """
         args = self.get_arguments()
         rm_item = RightmoveModel.find_by_name(args['name'])
         if rm_item:
+            try:
+                rm_item.links = self.rightmoveScraper(rm_item.location)
+                rm_item.save_to_db()
+            except:
+                return {"error message": f"error occurred inserting the entry '{args['name']}'."}, 500
             return rm_item.json()
         return {"error message": f"item '{args['name']}' not found"}, 404
         
+    
     def post(self):
         """ create rightmove db entry """
-        args = self.get_arguments()
+        args = self.get_arguments(locationRequired=True)
 
         if RightmoveModel.find_by_name(args['name']):
             return {"error message": f"an item with name '{args['name']}' already exists."}, 400
@@ -40,6 +51,7 @@ class Rightmove(Resource):
             return {"error message": f"error occurred inserting the entry '{args['name']}'."}, 500
         return rm_item.json(), 201
 
+
     def delete(self):
         """ delete rightmove db entry """
         args = self.get_arguments()
@@ -50,9 +62,10 @@ class Rightmove(Resource):
 
             return {"message": f"item '{args['name']}' has been deleted"}
 
+
     def put(self):
         """ create or update rightmove db entry """
-        args = self.get_arguments()
+        args = self.get_arguments(locationRequired=True)
         rm_item = RightmoveModel.find_by_name(args['name'])
 
         if rm_item is None:
@@ -65,11 +78,8 @@ class Rightmove(Resource):
         return rm_item.json()
 
 
-class RightmoveScraper(Resource):
-
-    def get(self):
+    def rightmoveScraper(self, location_code):
         """ find available properties based on rightmove url attributes, return dict containing available properties and details """
-        global location_code
         # initialise index, this tracks the page number we are on. every additional page adds 24 to the index
         index = 0
         apartments_dict = {}
@@ -82,7 +92,7 @@ class RightmoveScraper(Resource):
             }
 
             # web address
-            rightmove = f"https://www.rightmove.co.uk/property-to-rent/find.html?searchType=RENT&locationIdentifier=REGION%{location_code['location']}&insId={pages}&radius=0.25&minPrice=700&maxPrice=1200&minBedrooms=1&maxBedrooms=2&displayPropertyType=&maxDaysSinceAdded=&sortByPriceDescending=&_includeLetAgreed=on&primaryDisplayPropertyType=&secondaryDisplayPropertyType=&oldDisplayPropertyType=&oldPrimaryDisplayPropertyType=&letType=&letFurnishType=&houseFlatShare="
+            rightmove = f"https://www.rightmove.co.uk/property-to-rent/find.html?searchType=RENT&locationIdentifier=REGION%{location_code}&insId={pages}&radius=0.25&minPrice=700&maxPrice=1200&minBedrooms=1&maxBedrooms=2&displayPropertyType=&maxDaysSinceAdded=&sortByPriceDescending=&_includeLetAgreed=on&primaryDisplayPropertyType=&secondaryDisplayPropertyType=&oldDisplayPropertyType=&oldPrimaryDisplayPropertyType=&letType=&letFurnishType=&houseFlatShare="
 
             try:
                 res = requests.get(rightmove, headers=headers)  # request webpage

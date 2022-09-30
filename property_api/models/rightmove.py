@@ -1,4 +1,5 @@
 from database.db import db
+from sqlalchemy_utils import JSONType
 
 class RightmoveModel(db.Model):
     __tablename__ = 'rightmove'
@@ -6,6 +7,7 @@ class RightmoveModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True)
     location = db.Column(db.String(7))
+    links = db.Column(JSONType)
 
     def __init__(self, name, location):
         self.name = name
@@ -18,7 +20,7 @@ class RightmoveModel(db.Model):
 
     def json(self):
         """ model entry data """
-        return {'name': self.name, 'location': self.location}
+        return {'name': self.name, 'location': self.location, 'links': self.links}
 
     @classmethod
     def find_by_name(cls, name):
