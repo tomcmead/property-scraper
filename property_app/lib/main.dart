@@ -15,27 +15,42 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage>{
+  int currentIndex = 1;
+  // final screens = [
+  //   FavouritesPage(),
+  //   HomePage(),
+  //   SettingsPage(),
+  // ];
+
   @override
-  Widget build (BuildContext context) => DefaultTabController(
-    length: 2, 
-    child: Scaffold(
+  Widget build (BuildContext context) => Scaffold(
       appBar: AppBar(
         title: Text("Property Hunter"),
         centerTitle: true,
         backgroundColor: Color.fromARGB(255, 38,130,166),
-        bottom: TabBar(
-          tabs: [
-            Tab(icon: Icon(Icons.home)),
-            Tab(icon: Icon(Icons.settings))
-          ],
-        ),
       ),
-      body: TabBarView(
-        children: [
-          Center(child: Text('Home')),
-          Center(child: Text('Settings')),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Color.fromARGB(255, 38,130,166),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        currentIndex: currentIndex,
+        showUnselectedLabels: false,
+        showSelectedLabels: false,
+        onTap: (index) => setState(() => currentIndex = index),
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite), 
+            label: 'Favourites',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
         ],
       ),
-    ),
-  );
+    );
 }
